@@ -1,0 +1,71 @@
+version: "3"
+
+tasks:
+  timeout-demo:
+    dir: blog
+    cmds:
+      - cmd: go run ./cmd/timeout/main.go
+        ignore_error: true
+      - task: _stop-httpbin
+    deps: [_start-httpbin]
+
+  timeout-with-cause-demo:
+    dir: blog
+    cmds:
+      - cmd: go run ./cmd/timeoutwithcause/main.go
+        ignore_error: true
+      - task: _stop-httpbin
+    deps: [_start-httpbin]
+
+  deadline-demo:
+    dir: blog
+    cmds:
+      - cmd: go run ./cmd/deadline/main.go
+        ignore_error: true
+      - task: _stop-httpbin
+    deps: [_start-httpbin]
+
+  statuschecker-demo:
+    dir: blog
+    cmds:
+      - cmd: go run ./cmd/statuschecker/main.go
+        ignore_error: true
+      - task: _stop-httpbin
+    deps: [_start-httpbin]
+
+  simplecontextvalue-demo:
+    dir: blog
+    cmds:
+      - cmd: go run ./cmd/simplecontextvalue/main.go
+        ignore_error: true
+
+  contextvalue-demo:
+    dir: blog
+    cmds:
+      - cmd: go run ./cmd/contextvalue/main.go
+        ignore_error: true
+
+  contextvalue-demo-curl:
+    dir: blog
+    cmds:
+      - curl http://0.0.0.0:8080/messages
+
+  # Internal Tasks
+  _start-httpbin:
+    internal: true
+    cmds:
+      - docker run -d --name httpbin -p 80:80 kennethreitz/httpbin
+      - |
+        echo "Waiting for httpbin to be ready..."
+        while ! curl -s http://localhost:80/ > /dev/null; do
+          echo "Waiting for container..."
+          sleep 2
+        done
+    silent: true
+
+  _stop-httpbin:
+    internal: true
+    cmds:
+      - docker stop httpbin
+      - docker rm httpbin
+    silent: true
