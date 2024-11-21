@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"time"
@@ -49,13 +50,15 @@ func getFromUrl(ctx context.Context, delayValue int) error {
 	slog.Info("getFromUrl entry: ", slog.Int("delay-value", delayValue))
 	start := time.Now()
 
+	// UPDATED HERE
 	timeoutAfter := 3 * time.Second
-
-	ctx, cancel := context.WithTimeoutCause(ctx, timeoutAfter, newApiTimeout(timeoutAfter))
+	// Conventionally, we can just do: `ctx, cancel := context.WithTimeoutCause(ctx, timeoutAfter, newApiTimeout(timeoutAfter))`
+	ctxWithTimeout, cancel := context.WithTimeoutCause(ctx, timeoutAfter, newApiTimeout(timeoutAfter))
 	defer cancel()
+	// END OF UPDATED CODE
 
 	url := fmt.Sprintf("http://0.0.0.0:80/delay/%d", delayValue)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctxWithTimeout, http.MethodGet, url, nil)
 	if err != nil {
 		return err // We don't expect this to happen
 	}
@@ -63,11 +66,12 @@ func getFromUrl(ctx context.Context, delayValue int) error {
 	httpClient := &http.Client{}
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		// Note: ctx.Err() will be set here for the child context.
-		slog.Error("httpClient.Do(req) has returned error: ", slog.String("err", err.Error()), slog.Any("ctx-err", ctx.Err()))
+		// Note: ctxWithTimout.Err() will be set here for the child context.
+		slog.Error("httpClient.Do(req) has returned error: ", slog.String("err", err.Error()), slog.Any("ctx-err", ctxWithTimeout.Err()))
 		return err
 	}
 	defer resp.Body.Close()
+	defer io.Copy(io.Discard, resp.Body)
 
 	slog.Info("getFromUrl completed: ", slog.Int64("since-ms", int64(time.Since(start)/time.Millisecond)))
 

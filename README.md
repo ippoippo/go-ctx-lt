@@ -17,3 +17,4 @@ Source code that will be used in a blog post.
 - `task simplecontextvalue-demo` : Demonstrates simplistic context values.
 - `task contextvalue-demo` : Demonstrates using context values, with package keys, to set trace-ids in a webserver.
 - `task contextvalue-demo-curl` : To be used in connjuction with `contextvalue-demo`.
+- `task parentchildcancellation-demo` : Demonstrates using that cancellation only propogates down

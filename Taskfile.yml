@@ -48,7 +48,14 @@ tasks:
   contextvalue-demo-curl:
     dir: blog
     cmds:
-      - curl http://0.0.0.0:8080/messages
+      - cmd: curl http://0.0.0.0:8080/messages
+        ignore_error: true
+
+  parentchildcancellation-demo:
+    dir: blog
+    cmds:
+      - cmd: go run ./cmd/parentchildcancellation/main.go
+        ignore_error: true
 
   # Internal Tasks
   _start-httpbin:
